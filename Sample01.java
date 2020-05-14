@@ -39,7 +39,9 @@ public class Sample01 {
 
 		try {
 
-
+			// Class.forNameはバイトコードのJDBCドライバをロードするメソッド
+			// メモリ上にClassオブジェクトとしてJDBCドライバを生成する
+			
 			Class.forName(driverName);
 
 
@@ -48,19 +50,40 @@ public class Sample01 {
 		}
 
 
-		// JDBCに接続するためのオブジェクトを生成
+		/*
+		 *  ③ JDBCに接続するためのオブジェクトを準備
+		 */
+		
+		// ConnectionオブジェクトはDB接続に関する情報を持つ
 		Connection con = null;
+		
+		// PreparedStatementオブジェクトはSQL文をセットするもの
 		PreparedStatement ps = null;
+		
+		// ResultSetオブジェクトはセットされたSQL文を送信&取得するもの
 		ResultSet rs = null;
 
 
 
 		try {
+			
+			/*
+			 *  ④ データベースへの接続の確立
+			 */
 
-			// ① 接続の確立
+			// JDBCドライバマネージャからMySQLに接続
+			// 引数は(接続先DB , ユーザー名 , パスワード)
+			// DB接続が完了したら、準備済みのConnectionオブジェクトに情報を渡す
+			
 			con = DriverManager.getConnection(jdbcUrl , userId , userPass);
-
-			// ② SQL文の送信 & 抽出結果の処理
+			
+			
+			
+			/*
+			 *  ⑤ SQL文の送信
+			 */
+			
+			// 発行したいSQL文を用意しておく
 			StringBuffer buf = new StringBuffer();
 
 			buf.append("SELECT") ;
@@ -73,13 +96,16 @@ public class Sample01 {
 			buf.append(" id ") ;
 
 
-			// psオブジェクトを生成&発行するSQLをセット
+			// 発行するSQL文をセット(PreparedStatementオブジェクト）
 			ps = con.prepareStatement(buf.toString());
 
-			// sql文の送信&実行結果を取得
+			// SQL文の送信&実行結果を取得（ResultSetオブジェクト）
 			rs = ps.executeQuery();
 
-
+		/*
+		 *  ⑥ ResultSetオブジェクトから１レコードずつ情報を取得&表示
+		 */
+			
 		while (rs.next()) {
 
 			StringBuffer rsbuf = new StringBuffer();
@@ -91,16 +117,24 @@ public class Sample01 {
 			rsbuf.append(rs.getString("gender"));
 
 
-			// 加工したレコード分のデータを表示
+			// 加工した１レコード分のデータを表示
 			System.out.println(rsbuf.toString());
 		}
 
 
 		} catch(SQLException e) {
+			
 			e.printStackTrace();
-
+					
 		} finally {
-
+			
+			/*
+			 *  ⑦ 接続の解除
+			 */
+			
+			
+			// ResultSetオブジェクトの解除
+			
 			if (rs != null) {
 				try {
 					rs.close();
@@ -108,8 +142,9 @@ public class Sample01 {
 					e.printStackTrace();
 				}
 			};
-
-
+			
+			// PreparedStatementオブジェクトの解除
+			
 			if (ps != null) {
 				try {
 					ps.close();
@@ -117,7 +152,9 @@ public class Sample01 {
 					e.printStackTrace();
 				}
 			};
-
+			
+			// Connectionオブジェクトの解除
+			
 			if (con != null) {
 				try {
 					con.close();
